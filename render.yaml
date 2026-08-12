@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: shadowlens-api
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn src.api.main:app --host 0.0.0.0 --port $PORT
+    plan: free
+    envVars:
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      - key: MONGODB_URI
+        sync: false
+      - key: MONGODB_DB
+        value: sab
+      - key: CORS_ORIGINS
+        value: https://shadowlens.netlify.app
+      - key: CLASSIFIER_MODEL_PATH
+        value: models/shadowlens-classifier
+      - key: DEFAULT_PIPELINE_MODEL
+        value: gemini/gemini-2.5-flash
+      - key: GOAL_CHECKER_MODEL
+        value: gemini/gemini-2.5-flash
