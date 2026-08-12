@@ -1,0 +1,44 @@
+# ── Secrets & Environment ──────────────────────────────────────────────────────
+.env
+.env.local
+.env.*.local
+*.env
+
+# ── Python ─────────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+ENV/
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# ── ML Models (large binary files) ────────────────────────────────────────────
+models/shadowlens-classifier/
+*.pkl
+*.joblib
+*.h5
+*.pt
+*.pth
+*.onnx
+
+# ── Frontend ───────────────────────────────────────────────────────────────────
+frontend/node_modules/
+frontend/dist/
+frontend/dist-ssr/
+frontend/.env
+frontend/*.local
+
+# ── Scratch / temp ─────────────────────────────────────────────────────────────
+scratch_*.py
+*.log
+.DS_Store
+Thumbs.db
