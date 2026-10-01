@@ -5,6 +5,7 @@ import type { ObserverEvent } from '../services/api';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
 } from 'recharts';
+import { palette } from '../theme';
 
 export default function RunHistory() {
   const [runs, setRuns]           = useState<RunSummary[]>([]);
@@ -53,7 +54,7 @@ export default function RunHistory() {
     }));
   })();
 
-  const modelColors = ['#00ff66', '#00993c', '#ffffff', '#64748b'];
+  const modelColors = [palette.gold, palette.silver, palette.white, palette.silverSoft];
 
   const exportCSV = () => {
     const toExport = selectedRuns.length > 0 ? selectedRuns : runs;
@@ -74,7 +75,7 @@ export default function RunHistory() {
             <h2>Run History</h2>
             <p>All past pipeline runs with attack metrics. Multi-select for comparison view.</p>
           </div>
-          <div style={{ display: 'flex', gap: 8 }}>
+          <div className="history-actions" style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             {selected.size >= 2 && (
               <button className="btn btn-secondary" onClick={() => setCompare(!compareMode)}>
                 {compareMode ? 'Hide Compare' : `Compare (${selected.size})`}
@@ -112,7 +113,7 @@ export default function RunHistory() {
 
       {/* Filters */}
       <div className="card" style={{ padding: '12px 18px', marginBottom: 16 }}>
-        <div style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
+        <div className="history-filter-row" style={{ display: 'flex', gap: 14, alignItems: 'center', flexWrap: 'wrap' }}>
           <select className="form-select" style={{ width: 200 }} value={filterTech}
             onChange={e => setFilterTech(e.target.value)}>
             <option value="">All Techniques</option>
@@ -127,7 +128,7 @@ export default function RunHistory() {
               <option key={m} value={m}>{m}</option>
             ))}
           </select>
-          <span style={{ fontSize: '0.8rem', color: 'rgba(0, 255, 102, 0.45)', marginLeft: 'auto' }}>
+          <span style={{ fontSize: '0.8rem', color: '#A8AEB4', marginLeft: 'auto' }}>
             {runs.length} RUNS · {selected.size} SELECTED
           </span>
         </div>
@@ -136,9 +137,9 @@ export default function RunHistory() {
       {/* Table */}
       <div className="card" style={{ padding: 0, overflow: 'auto' }}>
         {loading ? (
-          <div style={{ padding: 40, textAlign: 'center', color: 'rgba(0, 255, 102, 0.45)' }}>Loading runs…</div>
+          <div style={{ padding: 40, textAlign: 'center', color: '#A8AEB4' }}>Loading runs…</div>
         ) : runs.length === 0 ? (
-          <div style={{ padding: 40, textAlign: 'center', color: 'rgba(0, 255, 102, 0.45)' }}>
+          <div style={{ padding: 40, textAlign: 'center', color: '#A8AEB4' }}>
             No runs yet. Start a pipeline from the Attack Graph view.
           </div>
         ) : (
@@ -173,18 +174,18 @@ export default function RunHistory() {
                   </td>
                   <td>
                     <span className="badge" style={{
-                      background: 'rgba(0, 255, 102, 0.05)',
-                      color: '#00ff66',
-                      border: '1px solid rgba(0, 255, 102, 0.25)',
+                      background: 'rgba(185, 145, 74, 0.07)',
+                      color: palette.goldBright,
+                      border: '1px solid rgba(185, 145, 74, 0.3)',
                       fontSize: '0.66rem'
                     }}>
                       {run.technique.replace(/_/g, ' ')}
                     </span>
                   </td>
-                  <td style={{ fontSize: '0.8rem', color: '#94a3b8' }}>
+                  <td style={{ fontSize: '0.8rem', color: '#B8BFC5' }}>
                     {run.model.split('/').pop()}
                   </td>
-                  <td style={{ fontSize: '0.78rem', color: '#64748b', maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <td style={{ fontSize: '0.78rem', color: '#91989E', maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {run.task_preview}
                   </td>
                   <td>
@@ -201,8 +202,8 @@ export default function RunHistory() {
                   <td style={{ fontFamily: 'monospace', fontSize: '0.78rem', color: '#64748b' }}>
                     {run.max_drift_score.toFixed(3)}
                   </td>
-                  <td>{run.goal_violated ? <span style={{ color: '#ff003c' }}>⚠</span> : <span style={{ color: '#00ff66' }}>✓</span>}</td>
-                  <td>{run.terminal_success ? <span style={{ color: '#ff003c' }}>⚡</span> : <span style={{ color: '#00ff66' }}>✓</span>}</td>
+                  <td>{run.goal_violated ? <span style={{ color: palette.goldBright }}>⚠</span> : <span style={{ color: palette.silver }}>✓</span>}</td>
+                  <td>{run.terminal_success ? <span style={{ color: palette.goldBright }}>⚡</span> : <span style={{ color: palette.silver }}>✓</span>}</td>
                 </tr>
               ))}
             </tbody>

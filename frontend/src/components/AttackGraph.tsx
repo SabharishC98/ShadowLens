@@ -1,6 +1,7 @@
 import { useEffect, useRef, useCallback } from 'react';
 import * as d3 from 'd3';
 import type { ObserverEvent } from '../services/api';
+import { palette } from '../theme';
 
 const NODES = [
   { id: 'INPUT_VALIDATOR', label: 'Input Validator', short: 'IV' },
@@ -17,7 +18,7 @@ const LINKS = [
 
 const colorScale = d3.scaleLinear<string>()
   .domain([0, 0.35, 0.7, 1.0])
-  .range(['#00ff66', '#fbbf24', '#ff003c', '#ff003c']);
+  .range([palette.silverSoft, palette.gold, palette.goldBright, palette.goldBright]);
 
 interface Props {
   events: ObserverEvent[];
@@ -42,7 +43,7 @@ export default function AttackGraph({ events, onEdgeClick }: Props) {
       .attr('patternUnits', 'userSpaceOnUse');
     pattern.append('path')
       .attr('d', 'M 40 0 L 0 0 0 40')
-      .attr('fill', 'none').attr('stroke', 'rgba(0,255,102,0.025)').attr('stroke-width', 1);
+      .attr('fill', 'none').attr('stroke', 'rgba(200,205,208,0.035)').attr('stroke-width', 1);
     svg.append('rect').attr('width', W).attr('height', H).attr('fill', 'url(#grid)');
 
     // Glow filter
@@ -52,12 +53,21 @@ export default function AttackGraph({ events, onEdgeClick }: Props) {
     feMerge.append('feMergeNode').attr('in', 'coloredBlur');
     feMerge.append('feMergeNode').attr('in', 'SourceGraphic');
 
-    // Node positions (horizontal pipeline layout)
-    const nodeSpacing = W / (NODES.length + 1);
+    // Use a vertical pipeline on narrow screens to preserve label separation.
+    const compact = W < 560;
     const nodePositions: Record<string, { x: number; y: number }> = {};
-    NODES.forEach((n, i) => {
-      nodePositions[n.id] = { x: nodeSpacing * (i + 1), y: H / 2 };
-    });
+    if (compact) {
+      const firstY = 126;
+      const nodeSpacing = Math.max(48, (H - firstY - 54) / (NODES.length - 1));
+      NODES.forEach((n, i) => {
+        nodePositions[n.id] = { x: W * 0.34, y: firstY + nodeSpacing * i };
+      });
+    } else {
+      const nodeSpacing = W / (NODES.length + 1);
+      NODES.forEach((n, i) => {
+        nodePositions[n.id] = { x: nodeSpacing * (i + 1), y: H / 2 };
+      });
+    }
 
     // Draw edges
     LINKS.forEach(link => {
@@ -126,35 +136,37 @@ export default function AttackGraph({ events, onEdgeClick }: Props) {
       // Outer ring (injected indicator)
       if (injected) {
         g.append('circle').attr('r', 30).attr('fill', 'none')
-          .attr('stroke', '#ff003c').attr('stroke-width', 2).attr('opacity', 0.6)
+          .attr('stroke', palette.goldBright).attr('stroke-width', 1.5).attr('opacity', 0.72)
           .attr('stroke-dasharray', '4 2');
       }
 
       // Node circle
       g.append('circle').attr('r', 22)
-        .attr('fill', injected ? 'rgba(255,0,60,0.15)' : 'rgba(0,255,102,0.06)')
-        .attr('stroke', injected ? '#ff003c' : '#00ff66')
-        .attr('stroke-width', 2);
+        .attr('fill', injected ? 'rgba(226,195,107,0.14)' : 'rgba(184,191,197,0.055)')
+        .attr('stroke', injected ? palette.goldBright : palette.silverSoft)
+        .attr('stroke-width', injected ? 1.8 : 1.2);
 
       // Short label inside node
       g.append('text')
         .attr('text-anchor', 'middle').attr('dy', '0.35em')
-        .attr('fill', injected ? '#ff3355' : '#ffffff')
+        .attr('fill', injected ? palette.goldBright : palette.white)
         .attr('font-size', '11px').attr('font-weight', '700')
-        .attr('font-family', 'Share Tech Mono, monospace')
+        .attr('font-family', 'DM Mono, monospace')
         .text(node.short);
 
       // Node label below
       g.append('text')
-        .attr('text-anchor', 'middle').attr('dy', '44px')
-        .attr('fill', 'rgba(0, 255, 102, 0.65)').attr('font-size', '11px').attr('font-weight', '600')
-        .attr('font-family', 'Share Tech Mono, monospace')
+        .attr('text-anchor', compact ? 'start' : 'middle')
+        .attr('x', compact ? 35 : 0)
+        .attr('dy', compact ? '0.35em' : '44px')
+        .attr('fill', 'rgba(220, 224, 227, 0.72)').attr('font-size', compact ? '9px' : '11px').attr('font-weight', '600')
+        .attr('font-family', 'DM Mono, monospace')
         .text(node.label);
 
       // Goal violated badge
       if (nodeEvent?.goal_violated) {
         g.append('circle').attr('cx', 15).attr('cy', -15).attr('r', 6)
-          .attr('fill', '#ff003c');
+          .attr('fill', palette.goldBright);
         g.append('text').attr('x', 15).attr('y', -12)
           .attr('text-anchor', 'middle').attr('fill', '#ffffff')
           .attr('font-size', '8px').attr('font-weight', '800')
@@ -163,13 +175,13 @@ export default function AttackGraph({ events, onEdgeClick }: Props) {
     });
 
     // Legend
-    const legend = svg.append('g').attr('transform', `translate(${W - 180}, 20)`);
+    const legend = svg.append('g').attr('transform', `translate(${compact ? 14 : W - 180}, 20)`);
     legend.append('rect').attr('width', 170).attr('height', 80)
-      .attr('rx', 0).attr('fill', 'rgba(0,0,0,0.85)').attr('stroke', 'rgba(0, 255, 102, 0.2)');
+      .attr('rx', 0).attr('fill', 'rgba(10,11,12,0.92)').attr('stroke', 'rgba(220,224,227,0.18)');
     const legendItems = [
-      { color: '#00ff66', label: 'Safe (0.0–0.3)' },
-      { color: '#fbbf24', label: 'Medium (0.3–0.7)' },
-      { color: '#ff003c', label: 'Injected (0.7–1.0)' },
+      { color: palette.silver, label: 'Contained (0.0–0.3)' },
+      { color: palette.gold, label: 'Watch (0.3–0.7)' },
+      { color: palette.goldBright, label: 'Injected (0.7–1.0)' },
     ];
     legendItems.forEach((item, i) => {
       legend.append('rect').attr('x', 12).attr('y', 12 + i * 22)

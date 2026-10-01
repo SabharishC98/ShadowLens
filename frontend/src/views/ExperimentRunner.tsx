@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { api, type ExperimentStatus } from '../services/api';
 import { ExperimentSocket } from '../services/websocket';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { palette } from '../theme';
 
 const ALL_TECHNIQUES = [
   'role_override', 'context_poisoning', 'goal_hijacking',
@@ -115,7 +116,7 @@ export default function ExperimentRunner() {
     }));
   })();
 
-  const modelColors = ['#00ff66', '#00993c', '#ffffff'];
+  const modelColors = [palette.gold, palette.silver, palette.white];
 
   return (
     <div>
@@ -124,7 +125,7 @@ export default function ExperimentRunner() {
         <p>Run the full paper experiment matrix — 5 techniques × N models × 20 runs per cell</p>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '340px 1fr', gap: 20, alignItems: 'flex-start' }}>
+      <div className="experiment-layout">
 
         {/* Config */}
         <div className="card">
@@ -171,7 +172,7 @@ export default function ExperimentRunner() {
             <input type="range" className="slider" min={1} max={5} value={concurrency}
               onChange={e => setConcurrency(parseInt(e.target.value))} />
             {concurrency > 1 && (
-              <span style={{ fontSize: '0.72rem', color: '#ff003c' }}>
+              <span style={{ fontSize: '0.72rem', color: palette.goldBright }}>
                 ⚠ &gt;1 may hit API rate limits on free tier
               </span>
             )}
@@ -179,7 +180,7 @@ export default function ExperimentRunner() {
 
           <div style={{
             background: 'rgba(255, 255, 255, 0.02)', border: '1px solid var(--border)',
-            borderRadius: 0, padding: '10px 14px', marginBottom: 16, fontSize: '0.82rem', color: '#94a3b8',
+            borderRadius: 0, padding: '10px 14px', marginBottom: 16, fontSize: '0.82rem', color: '#B8BFC5',
           }}>
             <strong style={{ color: '#ffffff' }}>{totalRuns} total runs</strong><br />
             Est. time at 2min/run: ~{Math.round(totalRuns * 2 / concurrency)} min
@@ -225,7 +226,7 @@ export default function ExperimentRunner() {
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'rgba(255, 255, 255, 0.6)' }}>
                 <span>{status.completed_runs} / {status.total_runs} completed</span>
                 <span>{status.progress_pct.toFixed(1)}%</span>
-                <span style={{ color: '#ff003c' }}>{status.failed_runs} failed</span>
+                <span style={{ color: palette.goldBright }}>{status.failed_runs} failed</span>
               </div>
             </div>
           )}
@@ -277,15 +278,15 @@ export default function ExperimentRunner() {
                       <tr key={i}>
                         <td>
                           <span className="badge" style={{
-                            background: 'rgba(0, 255, 102, 0.05)',
-                            color: '#00ff66',
-                            border: '1px solid rgba(0, 255, 102, 0.25)',
+                            background: 'rgba(185, 145, 74, 0.07)',
+                            color: palette.goldBright,
+                            border: '1px solid rgba(185, 145, 74, 0.3)',
                             fontSize: '0.66rem'
                           }}>
                             {(r.technique as string)?.replace(/_/g,' ')}
                           </span>
                         </td>
-                        <td style={{ fontSize: '0.78rem', color: '#94a3b8' }}>{(r.model as string)?.split('/').pop()}</td>
+                        <td style={{ fontSize: '0.78rem', color: '#B8BFC5' }}>{(r.model as string)?.split('/').pop()}</td>
                         <td style={{
                           fontFamily: 'monospace', fontWeight: 700,
                           color: '#ffffff',
@@ -295,8 +296,8 @@ export default function ExperimentRunner() {
                         <td style={{ fontFamily: 'monospace', fontSize: '0.78rem', color: '#64748b' }}>
                           {((r.max_drift_score as number) || 0).toFixed(3)}
                         </td>
-                        <td>{r.goal_violated ? <span style={{ color: '#ff003c' }}>⚠</span> : <span style={{ color: '#00ff66' }}>✓</span>}</td>
-                        <td>{r.terminal_success ? <span style={{ color: '#ff003c' }}>⚡</span> : '—'}</td>
+                        <td>{r.goal_violated ? <span style={{ color: palette.goldBright }}>⚠</span> : <span style={{ color: palette.silver }}>✓</span>}</td>
+                        <td>{r.terminal_success ? <span style={{ color: palette.goldBright }}>⚡</span> : '—'}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -306,7 +307,7 @@ export default function ExperimentRunner() {
           )}
 
           {!status && !running && (
-            <div className="card" style={{ textAlign: 'center', padding: '40px 20px', color: 'rgba(0, 255, 102, 0.45)' }}>
+            <div className="card" style={{ textAlign: 'center', padding: '40px 20px', color: '#9AA1A7' }}>
               Configure your experiment matrix and click Start Experiment.<br />
               Results appear in real-time as each pipeline run completes.
             </div>

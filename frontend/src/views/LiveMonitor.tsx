@@ -2,18 +2,19 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import EventDrawer from '../components/EventDrawer';
 import type { ObserverEvent } from '../services/api';
 import { ShadowLensSocket } from '../services/websocket';
+import { palette } from '../theme';
 
 interface Props {
   runId?: string | null;
 }
 
 const TECHNIQUE_COLORS: Record<string, string> = {
-  safe:                     '#00ff66',
-  role_override:            '#ffffff',
-  goal_hijacking:           '#ffffff',
-  context_poisoning:        '#ffffff',
-  tool_manipulation:        '#ffffff',
-  cascading_amplification:  '#ffffff',
+  safe:                     palette.silver,
+  role_override:            palette.gold,
+  goal_hijacking:           palette.gold,
+  context_poisoning:        palette.gold,
+  tool_manipulation:        palette.gold,
+  cascading_amplification:  palette.gold,
 };
 
 export default function LiveMonitor({ runId }: Props) {
@@ -56,20 +57,14 @@ export default function LiveMonitor({ runId }: Props) {
   return (
     <div>
       <div className="page-header">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 18 }}>
           <div>
             <h2>Live Monitor</h2>
             <p>Real-time inter-agent message stream — like a network packet inspector for agent pipelines</p>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <div style={{
-              width: 8, height: 8, borderRadius: '50%',
-              background: connected ? '#00ff66' : '#ff003c',
-              boxShadow: connected ? '0 0 10px rgba(0, 255, 102, 0.6)' : '0 0 10px rgba(255, 0, 60, 0.6)',
-            }} />
-            <span style={{ fontSize: '0.8rem', color: 'rgba(0, 255, 102, 0.65)' }}>
-              {connected ? 'CONNECTED' : 'DISCONNECTED'}
-            </span>
+          <div className={`monitor-live-state ${connected ? 'is-connected' : ''}`}>
+            <span className="monitor-live-dot" />
+            <span>{connected ? 'CONNECTED' : 'DISCONNECTED'}</span>
           </div>
         </div>
       </div>
@@ -124,23 +119,16 @@ export default function LiveMonitor({ runId }: Props) {
             Clear
           </button>
 
-          <span style={{ fontSize: '0.8rem', color: 'rgba(0, 255, 102, 0.45)' }}>
+          <span style={{ fontSize: '0.8rem', color: '#A8AEB4' }}>
             {filtered.length} / {events.length} EVENTS
           </span>
         </div>
       </div>
 
       {/* Event log */}
-      <div className="card" style={{ padding: 0, maxHeight: 600, overflowY: 'auto' }}>
+      <div className="card monitor-events" style={{ padding: 0 }}>
         {/* Header row */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: '60px 30px 200px 180px 100px 80px 60px 1fr',
-          padding: '10px 14px',
-          borderBottom: '1px solid var(--border)',
-          fontSize: '0.7rem', color: 'rgba(0, 255, 102, 0.45)', textTransform: 'uppercase', letterSpacing: '0.5px',
-          position: 'sticky', top: 0, background: 'var(--bg-surface)', zIndex: 1,
-        }}>
+        <div className="monitor-grid-head">
           <span>Time</span>
           <span>Hop</span>
           <span>Route</span>
@@ -152,7 +140,7 @@ export default function LiveMonitor({ runId }: Props) {
         </div>
 
         {filtered.length === 0 ? (
-          <div style={{ padding: '40px 20px', textAlign: 'center', color: '#475569' }}>
+            <div style={{ padding: '40px 20px', textAlign: 'center', color: '#9AA1A7' }}>
             {events.length === 0
               ? 'Waiting for pipeline events… Start a run from the Attack Graph view.'
               : 'No events match current filters.'}
@@ -161,24 +149,19 @@ export default function LiveMonitor({ runId }: Props) {
           filtered.map(e => {
             const conf = e.injection_confidence;
             const rowClass = e.injection_detected ? 'injected' : conf > 0.3 ? 'medium' : 'safe';
-            const techColor = TECHNIQUE_COLORS[e.injection_technique] || '#94a3b8';
+            const techColor = TECHNIQUE_COLORS[e.injection_technique] || palette.silver;
 
             return (
               <div
                 key={e.event_id}
-                className={`event-row ${rowClass}`}
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: '60px 30px 200px 180px 100px 80px 60px 1fr',
-                  gap: 0,
-                }}
+                className={`event-row monitor-grid-row ${rowClass}`}
                 onClick={() => setSelected(e)}
               >
-                <span style={{ color: '#475569', fontFamily: 'monospace', fontSize: '0.72rem' }}>
+                <span style={{ color: '#899097', fontFamily: 'monospace', fontSize: '0.72rem' }}>
                   {new Date(e.timestamp).toLocaleTimeString().slice(0, 8)}
                 </span>
-                <span style={{ color: '#64748b', fontSize: '0.8rem' }}>{e.hop_index}</span>
-                <span style={{ fontSize: '0.78rem', color: '#94a3b8' }}>
+                <span style={{ color: '#A8AEB4', fontSize: '0.8rem' }}>{e.hop_index}</span>
+                <span style={{ fontSize: '0.78rem', color: '#B8BFC5' }}>
                   {e.sender_node.slice(0, 5)} → {e.receiver_node.slice(0, 5)}
                 </span>
                 <span>
@@ -193,18 +176,18 @@ export default function LiveMonitor({ runId }: Props) {
                 </span>
                 <span style={{
                   fontFamily: 'monospace', fontSize: '0.8rem',
-                  color: conf > 0.7 ? '#ff003c' : conf > 0.35 ? '#fbbf24' : '#00ff66',
+                  color: conf > 0.7 ? palette.goldBright : conf > 0.35 ? palette.gold : palette.silver,
                   fontWeight: 600,
                 }}>
                   {(conf * 100).toFixed(0)}%
                 </span>
-                <span style={{ fontFamily: 'monospace', fontSize: '0.78rem', color: '#64748b' }}>
+                <span style={{ fontFamily: 'monospace', fontSize: '0.78rem', color: '#A8AEB4' }}>
                   {e.drift_score.toFixed(3)}
                 </span>
                 <span style={{ fontSize: '0.75rem' }}>
-                  {e.goal_violated ? <span style={{ color: '#ff003c' }}>⚠</span> : <span style={{ color: '#00ff66' }}>✓</span>}
+                  {e.goal_violated ? <span style={{ color: palette.goldBright }}>⚠</span> : <span style={{ color: palette.silver }}>✓</span>}
                 </span>
-                <span style={{ color: '#64748b', fontSize: '0.78rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <span style={{ color: '#8F969C', fontSize: '0.78rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {e.raw_message.slice(0, 100)}
                 </span>
               </div>

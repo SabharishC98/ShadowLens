@@ -1,23 +1,24 @@
-import { useState, useEffect } from 'react';
-import AttackGraphView  from './views/AttackGraphView';
-import LiveMonitor      from './views/LiveMonitor';
-import RunHistory       from './views/RunHistory';
+import { useEffect, useState } from 'react';
+import { Activity, FlaskConical, History, Network } from 'lucide-react';
+import AttackGraphView from './views/AttackGraphView';
+import LiveMonitor from './views/LiveMonitor';
+import RunHistory from './views/RunHistory';
 import ExperimentRunner from './views/ExperimentRunner';
 import { api, type HealthStatus } from './services/api';
 import './index.css';
 
 type View = 'graph' | 'monitor' | 'history' | 'experiment';
 
-const NAV_ITEMS: Array<{ id: View; label: string; icon: string }> = [
-  { id: 'graph',      label: 'Attack Graph',      icon: '⬡' },
-  { id: 'monitor',    label: 'Live Monitor',       icon: '◉' },
-  { id: 'history',    label: 'Run History',        icon: '▤' },
-  { id: 'experiment', label: 'Experiment Runner',  icon: '⊞' },
-];
+const NAV_ITEMS = [
+  { id: 'graph', label: 'Attack graph', icon: Network, code: '01' },
+  { id: 'monitor', label: 'Live monitor', icon: Activity, code: '02' },
+  { id: 'history', label: 'Run archive', icon: History, code: '03' },
+  { id: 'experiment', label: 'Experiments', icon: FlaskConical, code: '04' },
+] as const;
 
 export default function App() {
-  const [view, setView]               = useState<View>('graph');
-  const [health, setHealth]           = useState<HealthStatus | null>(null);
+  const [view, setView] = useState<View>('graph');
+  const [health, setHealth] = useState<HealthStatus | null>(null);
   const [activeRunId, setActiveRunId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -30,85 +31,76 @@ export default function App() {
 
   return (
     <div className="app-layout">
-
-      {/* ── Sidebar ─────────────────────────────────────────────────────── */}
-      <nav className="sidebar">
-
-        {/* Logo */}
-        <div className="sidebar-logo" style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '26px 20px' }}>
-          <svg width="26" height="26" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M6 6 L12 18 L16 12 L20 18 L26 6 L16 16 Z" fill="#d4b89e" />
-            <path d="M16 16 L10 26 L16 22 L22 26 Z" fill="rgba(212, 184, 158, 0.55)" />
-          </svg>
-          <div>
-            <div style={{ color: '#ffffff', letterSpacing: '2px', fontSize: '1rem', fontFamily: 'Montserrat, sans-serif', fontWeight: 800, textTransform: 'uppercase' }}>
-              ShadowLens
-            </div>
-            <div style={{ color: '#d4b89e', fontSize: '0.6rem', letterSpacing: '1px', textTransform: 'uppercase', fontFamily: 'monospace', opacity: 0.7, marginTop: '2px' }}>
-              Attack Core v1.0
-            </div>
-          </div>
+      <nav className="sidebar" aria-label="Primary navigation">
+        <div className="sidebar-logo">
+          <span className="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 32 32" fill="none">
+              <path d="M5 23 12 9l4 8 4-8 7 14-11-7-11 7Z" />
+              <path d="m10 25 6-4 6 4" />
+            </svg>
+          </span>
+          <span className="brand-lockup">
+            <span className="brand-name">ShadowLens</span>
+            <span className="brand-caption">Trust boundary lab</span>
+          </span>
         </div>
 
-        {/* Navigation */}
+        <div className="sidebar-section-label">Workspace</div>
         <div className="sidebar-nav">
-          {NAV_ITEMS.map((item) => (
+          {NAV_ITEMS.map(({ id, label, icon: Icon, code }) => (
             <button
-              key={item.id}
-              className={`nav-item ${view === item.id ? 'active' : ''}`}
-              onClick={() => setView(item.id)}
+              key={id}
+              className={`nav-item ${view === id ? 'active' : ''}`}
+              onClick={() => setView(id)}
+              aria-label={label}
+              aria-current={view === id ? 'page' : undefined}
             >
-              <span style={{ fontSize: '0.95rem', opacity: view === item.id ? 1 : 0.55 }}>{item.icon}</span>
-              <span>{item.label}</span>
+              <Icon className="nav-icon" size={17} strokeWidth={1.7} aria-hidden="true" />
+              <span className="nav-label">{label}</span>
+              <span className="nav-index">{code}</span>
             </button>
           ))}
         </div>
 
-        {/* System status pill */}
-        <div style={{
-          margin: '0 14px 20px',
-          padding: '14px 16px',
-          border: '1px solid rgba(212, 184, 158, 0.12)',
-          borderRadius: '5px',
-          background: '#060606',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 4,
-          position: 'relative',
-        }}>
-          <div style={{
-            position: 'absolute', top: 14, right: 14,
-            width: 7, height: 7, borderRadius: '2px',
-            backgroundColor: health ? '#4a7c59' : '#9b4444',
-            boxShadow: health ? '0 0 6px #4a7c59' : '0 0 6px #9b4444',
-          }} />
-          <span style={{ fontSize: '0.6rem', color: 'rgba(212, 184, 158, 0.5)', letterSpacing: '1px', fontFamily: 'monospace', fontWeight: 600 }}>SYS_STATUS</span>
-          <span style={{ fontSize: '0.78rem', color: '#e0e0e0', fontWeight: 700, fontFamily: 'Montserrat, sans-serif' }}>
-            {health ? 'ACTIVE / 4-NODE' : 'OFFLINE'}
-          </span>
-          <span style={{ fontSize: '0.58rem', color: 'rgba(255,255,255,0.2)', fontFamily: 'monospace' }}>
+        <div className="sidebar-spacer" />
+
+        <section className="runtime-panel" aria-label="Backend connection status">
+          <div className="runtime-label">
+            <span>Runtime</span>
+            <span className={`status-beacon ${health ? 'is-online' : 'is-offline'}`} />
+          </div>
+          <strong>{health ? 'Connected' : 'Offline'}</strong>
+          <span className="runtime-detail">
             {health
-              ? `DB:${health.db_connected ? 'OK' : 'ERR'} · ${health.classifier_mode.toUpperCase()}`
-              : 'NO CONNECTION'}
+              ? `DB ${health.db_connected ? 'READY' : 'DEGRADED'} · ${health.classifier_mode.toUpperCase()}`
+              : 'Waiting for API connection'}
           </span>
-        </div>
+        </section>
 
-        {/* Version */}
-        <div style={{ padding: '0 14px 16px', fontSize: '0.6rem', color: 'rgba(255,255,255,0.12)', fontFamily: 'monospace', lineHeight: 1.6 }}>
-          v1.0.0 · Dr. NGP Institute<br />
-          Sabharish C · FYP 2026
+        <div className="sidebar-footer">
+          <span>ShadowLens / 01</span>
+          <span>Dr. NGP Institute · FYP 2026</span>
         </div>
-
       </nav>
 
-      {/* ── Main Content ─────────────────────────────────────────────────── */}
       <main className="main-content">
-        {view === 'graph'      && <AttackGraphView onRunStarted={(id: string) => setActiveRunId(id)} />}
-        {view === 'monitor'    && <LiveMonitor runId={activeRunId} />}
-        {view === 'history'    && <RunHistory />}
+        <div className="utility-bar">
+          <div className="utility-path">
+            <span>Security research</span>
+            <span className="utility-separator">/</span>
+            <span>Agent trust boundaries</span>
+          </div>
+          <div className="utility-meta">
+            <span>Field study 014</span>
+            <span className="utility-mark" aria-hidden="true" />
+          </div>
+        </div>
+
+        {view === 'graph' && <AttackGraphView onRunStarted={setActiveRunId} />}
+        {view === 'monitor' && <LiveMonitor runId={activeRunId} />}
+        {view === 'history' && <RunHistory />}
         {view === 'experiment' && <ExperimentRunner />}
       </main>
-
     </div>
   );
 }

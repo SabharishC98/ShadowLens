@@ -93,7 +93,7 @@ export default function AttackGraphView({ onRunStarted }: AttackGraphViewProps) 
         <p>Real-time visualization of injection propagation across the multi-agent pipeline</p>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '320px 1fr', gap: 20, alignItems: 'flex-start' }}>
+      <div className="analysis-layout">
         {/* Config panel */}
         <div className="card">
           <h3 style={{ marginBottom: 16 }}>Pipeline Config</h3>
@@ -174,20 +174,11 @@ export default function AttackGraphView({ onRunStarted }: AttackGraphViewProps) 
           </button>
 
           {runStatus !== 'idle' && (
-            <div style={{
-              marginTop: 12, padding: '10px 14px', borderRadius: 0,
-              background: runStatus === 'completed' ? 'rgba(0, 255, 102, 0.04)'
-                        : runStatus === 'failed'    ? 'rgba(255, 0, 60, 0.04)'
-                        : 'rgba(255, 255, 255, 0.02)',
-              border: `1px solid ${runStatus === 'completed' ? 'rgba(0, 255, 102, 0.25)'
-                                  : runStatus === 'failed'    ? 'rgba(255, 0, 60, 0.25)'
-                                  : 'rgba(255, 255, 255, 0.15)'}`,
-              fontSize: '0.8rem', color: '#94a3b8',
-            }}>
+            <div className={`run-state run-state--${runStatus}`}>
               Status: <strong style={{ color: '#ffffff' }}>{runStatus.toUpperCase()}</strong>
-              {currentRunId && <div style={{ marginTop: 4, fontFamily: 'monospace', fontSize: '0.7rem', color: 'rgba(0, 255, 102, 0.4)' }}>
+              {currentRunId && <span className="run-state-id">
                 {currentRunId.slice(0, 20)}...
-              </div>}
+              </span>}
             </div>
           )}
         </div>
@@ -240,16 +231,16 @@ export default function AttackGraphView({ onRunStarted }: AttackGraphViewProps) 
                   className={`event-row ${e.injection_detected ? 'injected' : e.injection_confidence > 0.3 ? 'medium' : 'safe'}`}
                   onClick={() => setSelected(e)}
                 >
-                  <span style={{ color: '#475569', fontFamily: 'monospace', fontSize: '0.72rem', minWidth: 60 }}>
+                  <span className="event-meta-hop">
                     hop {e.hop_index}
                   </span>
-                  <span style={{ fontWeight: 600, fontSize: '0.8rem', color: '#94a3b8', minWidth: 180 }}>
+                  <span className="event-route">
                     {e.sender_node} → {e.receiver_node}
                   </span>
                   <span className={`badge ${e.injection_detected ? 'badge-high' : 'badge-safe'}`}>
                     {e.injection_technique}
                   </span>
-                  <span style={{ fontFamily: 'monospace', fontSize: '0.78rem', color: e.injection_confidence > 0.5 ? '#f87171' : '#94a3b8' }}>
+                  <span className={`event-confidence ${e.injection_confidence > 0.5 ? 'is-elevated' : ''}`}>
                     {(e.injection_confidence * 100).toFixed(0)}%
                   </span>
                 </div>
